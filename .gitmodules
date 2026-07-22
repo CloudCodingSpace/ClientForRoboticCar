@@ -1,0 +1,6 @@
+[submodule "glfw"]
+	path = glfw
+	url = https://github.com/CloudCodingSpace/glfw
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/CloudCodingSpace/ImGui
