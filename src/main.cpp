@@ -1,6 +1,7 @@
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
-//#include <ws2tcpip.h>
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <cassert>
@@ -50,12 +51,19 @@ int main() {
     assert(window && "Failed to create window!");
     glfwMakeContextCurrent(window);
 
+    if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+        assert(false && "Failed to load OpenGL!");
+    }
+
     // Init other stuff
-    
+   
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glfwShowWindow(window);
     while(!glfwWindowShouldClose(window)) {
         if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             break;
+
+        glClear(GL_COLOR_BUFFER_BIT);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
