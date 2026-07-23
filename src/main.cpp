@@ -1,6 +1,9 @@
 #include <winsock2.h>
 //#include <ws2tcpip.h>
 
+#include <GLFW/glfw3.h>
+
+#include <cassert>
 #include <iostream>
 
 int main() {
@@ -31,6 +34,32 @@ int main() {
 
     closesocket(client);
     WSACleanup();
+
+    // Window
+    assert(glfwInit() && "Failed to init glfw!");
+
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+   
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* vidMode = glfwGetVideoMode(monitor);
+
+    GLFWwindow* window = glfwCreateWindow(vidMode->width, vidMode->height, "Client for Robotic Car", monitor, nullptr);
+    assert(window && "Failed to create window!");
+    glfwMakeContextCurrent(window);
+
+    // Init other stuff
+    
+    glfwShowWindow(window);
+    while(!glfwWindowShouldClose(window)) {
+        if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            break;
+
+        glfwPollEvents();
+        glfwSwapBuffers(window);
+    }
 
     return 0;
 }
