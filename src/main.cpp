@@ -7,6 +7,10 @@
 #include <cassert>
 #include <iostream>
 
+const static std::string s_QuitMsg = "/q";
+
+#define Send(msg) send(client, msg.c_str(), msg.length() * sizeof(char), 0)
+
 int main() {
     std::string ip = "";
     int port = 0;
@@ -69,7 +73,7 @@ int main() {
         glfwSwapBuffers(window);
     }
 
-    send(client, "/q", 2 * sizeof(char), 0);
+    Send(s_QuitMsg);
 
     closesocket(client);
     WSACleanup();
