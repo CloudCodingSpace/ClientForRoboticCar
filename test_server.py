@@ -6,8 +6,13 @@ server.listen(1)
 
 client, addr = server.accept()
 
-data = client.recv(1024)
-if not data:
-    print("Client disconnected")
-else:
-    print(data.decode())
+while True:
+    data = client.recv(1024)
+    if not data:
+        print("Client disconnected")
+    else:
+        decodedData = data.decode()
+
+        if decodedData == '/q':
+            break
+        print(decodedData)
