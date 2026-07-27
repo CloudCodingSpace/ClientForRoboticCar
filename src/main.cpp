@@ -4,6 +4,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include <cstring>
 #include <cassert>
 #include <iostream>
@@ -64,7 +68,19 @@ int main() {
         assert(false && "Failed to load OpenGL!");
     }
 
-    // Init other stuff
+    // ImGui 
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 330");
+        
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    
+        ImGui::StyleColorsDark();
+    }
    
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glfwShowWindow(window);
@@ -74,14 +90,114 @@ int main() {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::SetNextWindowPos(ImVec2(0, 0));
+        ImGui::SetNextWindowSize(ImVec2((float)vidMode->width, (float)vidMode->height));
+
+        ImGui::Begin("Main Panel", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+
+        ImGui::Text("Robotic Car Control Panel");
+        ImGui::Separator();
+
+        // ======================================================
+        // Connection
+        // ======================================================
+
+        ImGui::Text("Connection");
+        ImGui::BulletText("Status : Connected");
+        ImGui::BulletText("IP     : %s", ip.c_str());
+        ImGui::BulletText("Port   : %d", port);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // ======================================================
+        // Controls
+        // ======================================================
+
+        ImGui::Text("Controls");
+
+        ImGui::Dummy(ImVec2(0, 5));
+
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 70);
+        if (ImGui::Button("Forward", ImVec2(100, 35)))
             Send(FORWARD);
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            Send(BACK);
-        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+
+        ImGui::Dummy(ImVec2(0, 5));
+
+        if (ImGui::Button("Left", ImVec2(100, 35)))
             Send(LEFT);
-        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Stop", ImVec2(100, 35)))
+            Send(QUIT);
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Right", ImVec2(100, 35)))
             Send(RIGHT);
+
+        ImGui::Dummy(ImVec2(0, 5));
+
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 70);
+        if (ImGui::Button("Backward", ImVec2(100, 35)))
+            Send(BACK);
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // ======================================================
+        // Keyboard Controls
+        // ======================================================
+
+        ImGui::Text("Keyboard");
+        ImGui::BulletText("W - Forward");
+        ImGui::BulletText("A - Left");
+        ImGui::BulletText("S - Backward");
+        ImGui::BulletText("D - Right");
+        ImGui::BulletText("ESC - Exit");
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
+        // ======================================================
+        // Status
+        // ======================================================
+
+        const char* state = "Idle";
+
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            Send(FORWARD);
+            state = "Moving Forward";
+        }
+
+        else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            Send(BACK);
+            state = "Moving Backward";
+        }
+
+        else if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            Send(LEFT);
+            state = "Turning Left";
+        }
+
+        else if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            Send(RIGHT);
+            state = "Turning Right";
+        }
+
+        ImGui::Text("Robot Status");
+        ImGui::TextColored(ImVec4(0,1,0,1), "%s", state);
+
+        ImGui::End();
+
+        ImGui::EndFrame();
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwPollEvents();
         glfwSwapBuffers(window);
@@ -91,6 +207,10 @@ int main() {
 
     closesocket(client);
     WSACleanup();
+
+    ImGui_ImplGlfw_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui::DestroyContext();
 
     glfwDestroyWindow(window);
     glfwTerminate();
