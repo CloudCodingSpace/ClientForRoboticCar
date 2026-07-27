@@ -8,12 +8,13 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include <cstring>
+#include <vector>
 #include <cassert>
 #include <iostream>
 
 #define QUIT "/q"
 #define FORWARD "/w"
+#define STOP "/b"
 #define BACK "/s"
 #define LEFT "/a"
 #define RIGHT "/d"
@@ -29,6 +30,7 @@ int main() {
     std::cout << "Enter port :- ";
     std::cin >> port;
 
+    std::vector<std::string> logs;
     WSADATA data{};
     SOCKET client{};
     
@@ -53,6 +55,7 @@ int main() {
     assert(glfwInit() && "Failed to init glfw!");
 
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -78,6 +81,8 @@ int main() {
         
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.Fonts->AddFontFromFileTTF("consolas.ttf", 20.0f);
+        io.Fonts->Build();
     
         ImGui::StyleColorsDark();
     }
@@ -97,7 +102,7 @@ int main() {
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(ImVec2((float)vidMode->width, (float)vidMode->height));
 
-        ImGui::Begin("Main Panel", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+        ImGui::Begin("Main Panel", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
 
         ImGui::Text("Robotic Car Control Panel");
         ImGui::Separator();
@@ -122,30 +127,26 @@ int main() {
 
         ImGui::Dummy(ImVec2(0, 5));
 
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 70);
-        if (ImGui::Button("Forward", ImVec2(100, 35)))
-            Send(FORWARD);
+        ImGui::SetCursorPosX(vidMode->width/2 + 60);
+        ImGui::Button("Forward", ImVec2(100, 35));
 
         ImGui::Dummy(ImVec2(0, 5));
 
-        if (ImGui::Button("Left", ImVec2(100, 35)))
-            Send(LEFT);
+        ImGui::SetCursorPosX(vidMode->width/2 - 50);
+        ImGui::Button("Left", ImVec2(100, 35));
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Stop", ImVec2(100, 35)))
-            Send(QUIT);
+        ImGui::Button("Stop", ImVec2(100, 35));
 
         ImGui::SameLine();
 
-        if (ImGui::Button("Right", ImVec2(100, 35)))
-            Send(RIGHT);
+        ImGui::Button("Right", ImVec2(100, 35));
 
         ImGui::Dummy(ImVec2(0, 5));
 
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 70);
-        if (ImGui::Button("Backward", ImVec2(100, 35)))
-            Send(BACK);
+        ImGui::SetCursorPosX(vidMode->width/2 + 60);
+        ImGui::Button("Backward", ImVec2(100, 35));
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -159,6 +160,7 @@ int main() {
         ImGui::BulletText("A - Left");
         ImGui::BulletText("S - Backward");
         ImGui::BulletText("D - Right");
+        ImGui::BulletText("B - Brake/Stop car");
         ImGui::BulletText("ESC - Exit");
 
         ImGui::Spacing();
@@ -173,25 +175,53 @@ int main() {
         if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
             Send(FORWARD);
             state = "Moving Forward";
+
+            if(logs.empty() || logs.back() != state)
+                logs.emplace_back(state);
         }
 
-        else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
             Send(BACK);
             state = "Moving Backward";
+
+            if(logs.empty() || logs.back() != state)
+                logs.emplace_back(state);
         }
 
-        else if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
             Send(LEFT);
             state = "Turning Left";
+
+            if(logs.empty() || logs.back() != state)
+                logs.emplace_back(state);
         }
 
-        else if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
             Send(RIGHT);
             state = "Turning Right";
+
+            if(logs.empty() || logs.back() != state)
+                logs.emplace_back(state);
         }
 
-        ImGui::Text("Robot Status");
-        ImGui::TextColored(ImVec4(0,1,0,1), "%s", state);
+        if(glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+            Send(STOP);
+            state = "Stopping";
+
+            if(logs.empty() || logs.back() != state)
+                logs.emplace_back(state);
+        }
+        
+        ImGui::Text("Logs");
+        ImGui::Separator();
+
+
+        if (logs.size() > 20)
+            logs.erase(logs.begin());
+
+        for(const auto& log : logs) {
+            ImGui::TextColored(ImVec4(0, 1, 0, 1), "%s", log.c_str());
+        }
 
         ImGui::End();
 

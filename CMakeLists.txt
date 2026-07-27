@@ -10,6 +10,8 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
+file(COPY "consolas.ttf" DESTINATION CMAKE_CURRENT_BINARY_DIR)
+
 add_subdirectory(glad)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
