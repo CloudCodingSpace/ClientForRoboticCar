@@ -4,12 +4,17 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <cstring>
 #include <cassert>
 #include <iostream>
 
-const static std::string s_QuitMsg = "/q";
+#define QUIT "/q"
+#define FORWARD "/w"
+#define BACK "/s"
+#define LEFT "/a"
+#define RIGHT "/d"
 
-#define Send(msg) send(client, msg.c_str(), msg.length() * sizeof(char), 0)
+#define Send(msg) send(client, msg, strlen(msg) * sizeof(char), 0)
 
 int main() {
     std::string ip = "";
@@ -69,11 +74,20 @@ int main() {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
+        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            Send(FORWARD);
+        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            Send(BACK);
+        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            Send(LEFT);
+        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            Send(RIGHT);
+
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
 
-    Send(s_QuitMsg);
+    Send(QUIT);
 
     closesocket(client);
     WSACleanup();
