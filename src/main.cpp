@@ -12,12 +12,12 @@
 #include <cassert>
 #include <iostream>
 
-#define QUIT "/q"
-#define FORWARD "/w"
-#define STOP "/b"
-#define BACK "/s"
-#define LEFT "/a"
-#define RIGHT "/d"
+const char* QUIT = "/q";
+const char* FORWARD = "/w";
+const char* STOP = "/b";
+const char* BACK = "/s";
+const char* LEFT = "/a";
+const char* RIGHT = "/d";
 
 #define Send(msg) send(client, msg, strlen(msg) * sizeof(char), 0)
 
@@ -143,6 +143,7 @@ int main() {
    
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glfwShowWindow(window);
+    const char* prevSignal = "  ";
     while(!glfwWindowShouldClose(window)) {
         if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             break;
@@ -226,41 +227,46 @@ int main() {
 
         const char* state = "Idle";
 
-        if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        if((glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) && (strcmp(prevSignal, FORWARD)) != 0) {
             Send(FORWARD);
             state = "Moving Forward";
+            prevSignal = FORWARD;
 
             if(logs.empty() || logs.back() != state)
                 logs.emplace_back(state);
         }
 
-        if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        else if((glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) && (strcmp(prevSignal, FORWARD) != 0)) {
             Send(BACK);
             state = "Moving Backward";
+            prevSignal = BACK;
 
             if(logs.empty() || logs.back() != state)
                 logs.emplace_back(state);
         }
 
-        if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        else if((glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) && (strcmp(prevSignal, LEFT) != 0)) {
             Send(LEFT);
             state = "Turning Left";
+            prevSignal = LEFT;
 
             if(logs.empty() || logs.back() != state)
                 logs.emplace_back(state);
         }
 
-        if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        else if((glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) && (strcmp(prevSignal, RIGHT) != 0)) {
             Send(RIGHT);
             state = "Turning Right";
+            prevSignal = RIGHT;
 
             if(logs.empty() || logs.back() != state)
                 logs.emplace_back(state);
         }
 
-        if(glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+        else if((glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) && (strcmp(prevSignal, STOP) != 0)) {
             Send(STOP);
             state = "Stopping";
+            prevSignal = STOP;
 
             if(logs.empty() || logs.back() != state)
                 logs.emplace_back(state);
