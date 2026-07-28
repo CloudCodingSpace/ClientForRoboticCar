@@ -11,7 +11,7 @@ while True:
     data = client.recv(1024)
     decodedData = data.decode()
 
-    if decodedData == '/q':
+    if decodedData == "/q\n":
         print("Client disconnecting ... Shutting down server!")
         break
     print(decodedData)

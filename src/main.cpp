@@ -12,12 +12,12 @@
 #include <cassert>
 #include <iostream>
 
-const char* QUIT = "/q";
-const char* FORWARD = "/w";
-const char* STOP = "/b";
-const char* BACK = "/s";
-const char* LEFT = "/a";
-const char* RIGHT = "/d";
+const char* QUIT = "/q\n";
+const char* FORWARD = "/w\n";
+const char* STOP = "/b\n";
+const char* BACK = "/s\n";
+const char* LEFT = "/a\n";
+const char* RIGHT = "/d\n";
 
 #define Send(msg) send(client, msg, strlen(msg) * sizeof(char), 0)
 
